@@ -1,0 +1,179 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+
+    
+  <head>
+    <title>Smart Parking</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <link rel="stylesheet" href="{% static "css/Userstyle.css"%}">
+    <meta charset="utf-8">
+    <script>function notifyRedirect()
+  {
+      document.getElementById('dashboardForm').submit();
+  }    
+
+  function parkingRedirect()
+  {
+   document.getElementById('dashboardForm').action = "/find/"; 
+   document.getElementById('dashboardForm').submit();
+  }
+
+  function dashboardLogout()
+  {
+   document.getElementById('dashboardForm').action = "/logout/"; 
+   document.getElementById('dashboardForm').submit();
+  }
+  
+  </script>
+    <style>
+      #map {
+        height: 100%;
+      }
+      html, body {
+        height: 100%;
+        padding-top: 15px;
+        background: url("{% static "img/rover.jpg" %}") 50% fixed;
+      }
+#arcade-button {
+  position: relative;
+  cursor: pointer;
+  width: 120px;
+  height: 120px;
+  font-size: 25px;
+  -moz-border-radius: 60px;
+  -webkit-border-radius: 60px;
+  border-radius: 60px;
+  padding: 20px;
+  border: #fc2c71 1px solid;
+  background-color: #fc2c71;
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjQwcHgiIGN5PSI0MHB4IiByPSI2NSUiPjxzdG9wIG9mZnNldD0iMjMuMDc2OTIlIiBzdG9wLWNvbG9yPSIjZmMyYzcxIi8+PHN0b3Agb2Zmc2V0PSI0Ni4xNTM4NSUiIHN0b3AtY29sb3I9IiNmYzRhODUiLz48c3RvcCBvZmZzZXQ9IjYxLjUzODQ2JSIgc3RvcC1jb2xvcj0iI2ZjNGE4NSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZjMjc2ZSIvPjwvcmFkaWFsR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+  background-size: 100%;
+  background-image: -moz-radial-gradient(40px 40px, circle contain, #fc2c71 15px, #fc4a85 30px, #fc4a85 40px, #fc276e 65px);
+  background-image: -webkit-radial-gradient(40px 40px, circle contain, #fc2c71 15px, #fc4a85 30px, #fc4a85 40px, #fc276e 65px);
+  background-image: radial-gradient(circle contain at 40px 40px, #fc2c71 15px, #fc4a85 30px, #fc4a85 40px, #fc276e 65px);
+  background-position: center center;
+  background-repeat: no-repeat;
+  -moz-box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(255, 255, 255, 0.7) 0 3px 3px inset, #5b011f 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.5) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(255, 255, 255, 0.7) 0 3px 3px inset, #5b011f 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.5) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+  box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(255, 255, 255, 0.7) 0 3px 3px inset, #5b011f 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.5) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+}
+#arcade-button:hover {
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjQwcHgiIGN5PSI0MHB4IiByPSI2NSUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmYzQ1ODIiLz48c3RvcCBvZmZzZXQ9IjQ2LjE1Mzg1JSIgc3RvcC1jb2xvcj0iI2ZkNWU5MyIvPjxzdG9wIG9mZnNldD0iNjEuNTM4NDYlIiBzdG9wLWNvbG9yPSIjZmQ1ZTkzIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZmM0NTgyIi8+PC9yYWRpYWxHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4g');
+  background-size: 100%;
+  background-image: -moz-radial-gradient(40px 40px, circle contain, #fc4582, #fd5e93 30px, #fd5e93 40px, #fc4582 65px);
+  background-image: -webkit-radial-gradient(40px 40px, circle contain, #fc4582, #fd5e93 30px, #fd5e93 40px, #fc4582 65px);
+  background-image: radial-gradient(circle contain at 40px 40px, #fc4582, #fd5e93 30px, #fd5e93 40px, #fc4582 65px);
+  -moz-box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(255, 255, 255, 0.9) 0 3px 3px inset, #8d0230 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.5) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(255, 255, 255, 0.9) 0 3px 3px inset, #8d0230 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.5) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+  box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(255, 255, 255, 0.9) 0 3px 3px inset, #8d0230 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.5) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+}
+#arcade-button:active {
+ 
+  border-color: black;
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjQwcHgiIGN5PSI0MHB4IiByPSI2NSUiPjxzdG9wIG9mZnNldD0iMjMuMDc2OTIlIiBzdG9wLWNvbG9yPSIjZmMyYzcxIi8+PHN0b3Agb2Zmc2V0PSI0Ni4xNTM4NSUiIHN0b3AtY29sb3I9IiNkODAzNGEiLz48c3RvcCBvZmZzZXQ9IjYxLjUzODQ2JSIgc3RvcC1jb2xvcj0iI2Q4MDM0YSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2E2MDIzOSIvPjwvcmFkaWFsR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+  background-size: 100%;
+  background-image: -moz-radial-gradient(40px 40px, circle contain, #fc2c71 15px, #d8034a 30px, #d8034a 40px, #a60239 65px);
+  background-image: -webkit-radial-gradient(40px 40px, circle contain, #fc2c71 15px, #d8034a 30px, #d8034a 40px, #a60239 65px);
+  background-image: radial-gradient(circle contain at 40px 40px, #fc2c71 15px, #d8034a 30px, #d8034a 40px, #a60239 65px);
+  -moz-box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(0, 0, 0, 0.😎 0 3px 3px inset, #8d0230 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.3) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(0, 0, 0, 0.😎 0 3px 3px inset, #8d0230 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.3) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+  box-shadow: rgba(0, 0, 0, 0.😎 0 0 10px 5px, rgba(0, 0, 0, 0.😎 0 3px 3px inset, #8d0230 0 8px 10px inset, rgba(0, 0, 0, 0.3) 0 20px 10px inset, rgba(255, 255, 255, 0.3) 0 -2px 3px inset, #8d0230 0 -7px 20px inset;
+}
+#arcade-button:before {
+  display: block;
+  content: '';
+  position: absolute;
+  z-index: -2;
+  top: -20px;
+  left: -21px;
+  margin: 0;
+  padding: 20px;
+  background: #f20352;
+  width: 120px;
+  height: 120px;
+  -moz-border-radius: 80px;
+  -webkit-border-radius: 80px;
+  border-radius: 80px;
+  -moz-box-shadow: #bf0341 0 4px 5px inset, rgba(255, 255, 255, 0.5) 0 12px 5px inset, #8d0230 0 -12px 5px inset, rgba(0, 0, 0, 0.😎 0 4px 8px;
+  -webkit-box-shadow: #bf0341 0 4px 5px inset, rgba(255, 255, 255, 0.5) 0 12px 5px inset, #8d0230 0 -12px 5px inset, rgba(0, 0, 0, 0.😎 0 4px 8px;
+  box-shadow: #bf0341 0 4px 5px inset, rgba(255, 255, 255, 0.5) 0 12px 5px inset, #8d0230 0 -12px 5px inset, rgba(0, 0, 0, 0.😎 0 4px 8px;
+}
+
+#arcade-button:focus { outline-style: none; }
+     
+    </style>  
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=visualization"></script>
+    <script type="text/javascript" src='{% static "js/jquery.min.js" %}'> </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script>
+    $(document).ready(function(){
+  var $Menu = $('.Img');
+  $('.Img').mouseenter(function() {
+        $('.PopUp').css('opacity', '1');
+    $('.PopUp').css('margin-top', '20px');
+    });
+    $('.Img').mouseleave(function() {
+        $('.PopUp').css('opacity', '0');
+    $('.PopUp').css('margin-top', '0px');
+    });
+  $('.Img').on('click', function() {
+    if($Menu.hasClass('Img')){
+        $('.Img').addClass('click');
+    $('.Img').removeClass('Img');
+        $('.Profile').addClass('clickProfile');
+        $('.Profile').removeClass('Profile');
+        $('.clickPopUp').css('display', 'block');
+        $('.PopUp').css('display', 'none');
+    }else{
+    $('.click').addClass('Img');
+    $('.click').removeClass('click');
+        $('.clickProfile').addClass('Profile');
+        $('.clickProfile').removeClass('clickProfile');
+                $('.clickPopUp').css('display', 'none');
+        $('.PopUp').css('display', 'block');
+      }
+    });
+  });
+    </script>
+    
+  </head>
+
+
+
+  <body >
+    <form  name="dashboardForm" id="dashboardForm" action="/input-html/" method="POST"> {% csrf_token %}
+    <input type="hidden" name="session_id" id="session_id" value="{{ session_id }}"> </input>
+    <button type="button" class="btn btn-primary btn-lg" onclick=notifyRedirect() style="margin-left:10px">NOTIFY A LOCATION</button>
+    <button type="button" class="btn btn-primary btn-lg" onclick=parkingRedirect() style="margin-left:10px" >FIND PARKING</button>
+    <button type="button" id="arcade-button" style="color:white;margin-left:15px" onclick="dashboardLogout()">Log Out</button>
+
+<div class="ACon">
+<div class="Profile">
+<div class="Img">
+    <div class="overlay">
+      <span><img /></span>
+    </div>
+</div>
+<div class="PopUp">Open Profile</div>
+<div class="clickPopUp">
+<h4><a class="username" href="" value={{userName}}>Sagar</a></h4>
+<h5 class="buttons"><a class="username" href="">Points: 100</a></h5>
+<h5 class="buttons"><a class="username" href="">Activity</a></h5>
+<h5 class="buttons"><a class="username" href="">Portfolio</a></h5>
+<h5 class="buttons b"><a class="username" href="">Favorites</a></h5>
+<div class="Social">
+<svg viewBox="0 0 512 512" id="logo" class="codepen"><path class="box" d="M427 201.9c-0.6-4.2-2.9-8-6.4-10.3L264.2 87.3c-4.9-3.3-11.4-3.3-16.3 0L91.4 191.6c-4 2.7-6.5 7.4-6.5 12.2v104.3c0 4.8 2.5 9.6 6.5 12.2l156.4 104.3c4.9 3.3 11.4 3.3 16.3 0L420.6 320.4c4-2.6 6.6-7.4 6.6-12.2V203.9C427.1 203.2 427.1 202.6 427 201.9 427 201.7 427.1 202.6 427 201.9zM270.7 127.1l115.2 76.8 -51.5 34.4 -63.8-42.7V127.1zM241.3 127.1v68.6l-63.8 42.7 -51.5-34.4L241.3 127.1zM114.3 231.4l36.8 24.6 -36.8 24.6V231.4zM241.3 384.9L126.1 308.1l51.5-34.4 63.8 42.6V384.9zM256 290.8l-52-34.8 52-34.8 52 34.8L256 290.8zM270.7 384.9V316.3l63.8-42.6 51.5 34.4L270.7 384.9zM397.7 280.6l-36.8-24.6 36.8-24.6V280.6z"/></svg>
+<svg viewBox="0 0 512 512" id="logo"><path class="box" d="M211.9 197.4h-36.7v59.9h36.7V433.1h70.5V256.5h49.2l5.2-59.1h-54.4c0 0 0-22.1 0-33.7 0-13.9 2.8-19.5 16.3-19.5 10.9 0 38.2 0 38.2 0V82.9c0 0-40.2 0-48.8 0 -52.5 0-76.1 23.1-76.1 67.3C211.9 188.8 211.9 197.4 211.9 197.4z"/></svg>
+<svg viewBox="0 0 512 512" id="logo"><path d="M422.6 193.6c-5.3-45.3-23.3-51.6-59-54 -50.8-3.5-164.3-3.5-215.1 0 -35.7 2.4-53.7 8.7-59 54 -4 33.6-4 91.1 0 124.8 5.3 45.3 23.3 51.6 59 54 50.9 3.5 164.3 3.5 215.1 0 35.7-2.4 53.7-8.7 59-54C426.6 284.8 426.6 227.3 422.6 193.6zM222.2 303.4v-94.6l90.7 47.3L222.2 303.4z"/></svg>
+</div>
+</div>
+</div>
+</div>
+    </form>
+    <!--<div id="map"></div> -->
+  </body>
+</html>

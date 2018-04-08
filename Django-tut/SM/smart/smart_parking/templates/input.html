@@ -1,0 +1,111 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #map {
+            height: 700px;
+        }
+    </style>
+    
+</head>
+
+
+<!-- Session ID Needs to be sent. Also incoming ID needs to be stored-->
+<body>
+    <form id="notifyForm" name="notifyForm" method="POST" action="/input/"> {% csrf_token %}
+        
+        <div id="map">
+            <div id="current">Map Loading...</div>
+        </div>
+
+        <button type="submit" id="notifySubmitButton" class="btn btn-primary btn-lg" >Book Your Slot</button>
+        <button type="button" class="btn btn-primary btn-lg" onclick=initMap()>Check Your Location</button>
+         <button type="button" class="btn btn-primary btn-lg" onclick=returnToDashboard()>Check Parking Status</button>
+
+       
+        
+        <input type="hidden" id="session_id" value="{{session_id}}" name="session_id"> </input>
+        <input type="hidden" id="lat" value="" name="lat"> </input>
+        <input type="hidden" id="long" value="" name="long"> </input>
+
+        
+    </form>
+</body>
+<script>
+    var map;
+    var myMarker;
+
+    //Send session_ID
+    function returnToDashboard()
+    {
+       document.getElementById('notifyForm').action = "/all_slots/"; 
+       document.getElementById('notifyForm').submit();
+    }
+
+    //Session ID
+    function initMap() {
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 15,
+                        center: pos
+                    });
+                    myMarker = new google.maps.Marker({
+                        position: pos,
+                        map: map,
+                        draggable: true
+                    });
+
+
+                    myMarker.addListener('click', function() {
+                        map.setZoom(8);
+                        map.setCenter(myMarker.getPosition());
+                    });
+
+                    $('#lat').val(position.coords.latitude);
+                    $('#long').val(position.coords.longitude);
+                    
+                    google.maps.event.addListener(myMarker, 'dragend', function(evt) {
+                        //btnPress(evt.latLng.lat(), evt.latLng.lng());
+                        document.getElementById('lat').value=evt.latLng.lat();
+                        document.getElementById('long').value=evt.latLng.lng();
+                        //console.log("The latitude for notification is:"+document.getElementById('lat').value+"long-->"+document.getElementById('long').value)
+                        //$('#lat').val(evt.latLng.lat().toFixed(3));
+                       // $('#long').val(evt.latLng.lng().toFixed(3));
+                    });
+
+                    google.maps.event.addListener(myMarker, 'dragstart', function(evt) {});
+
+                    map.setCenter(myMarker.position);
+                    myMarker.setMap(map);
+
+
+                },
+                function() {
+                    handleLocationError(true, alert("Error"));
+                });
+
+        } else {
+            
+        }
+
+    }
+</script>
+
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCchoAsJVQaFzvWH6X2LDelGopsAfKH8js&callback=initMap">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+</html>

@@ -1,0 +1,286 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #map {
+            height: 700px;
+        }
+    </style>
+  
+</style>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maps.googleapis.com/maps/api/js" type="text/javascript"></script>
+    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    
+</head>
+
+<body onload="initMap()">
+    <form name="parkingForm" id="parkingForm" method="POST" action="/find-park/">{% csrf_token %}
+        <div id="map">
+            <div id="current">Map Loading...</div>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg" onclick=initMap()>Current Location</button>
+        <button type="button" class="btn btn-primary btn-lg" onclick=returnToDashboard()>BACK</button>
+
+        <select id="radius" name="radius">
+            <option value="0.25">0.25</option>
+            <option selected="selected" value="0.5">0.5</option>
+            <option value="0.75">.75</option>
+            <option value="1">1</option>
+            <option value="1.5">1.5</option>
+        </select>
+        <input type="hidden" name="session_id" id="session_id" value="{{ session_id }}"> </input>
+        <input type="hidden" id="lat" value="" name="lat">
+        <input type="hidden" id="long" value="" name = "long">
+        <input type="hidden" id="startLat" value="" name="startLat">
+        <input type="hidden" id="startLong" value="" name = "startLong">
+        <input type="hidden" id="endLat" value="" name="endLat">
+        <input type="hidden" id="endLong" value="" name = "endLong">
+    </form>
+</body>
+<script>
+    var map;
+    var myMarker;
+    var markers =[];
+    var myAdd;
+    
+    function returnToDashboard()
+    {
+      document.getElementById('parkingForm').action = "/dashboard/"; 
+      document.getElementById('parkingForm').submit();
+    }
+
+    function btnPress(lat, lon) {
+        //alert("Button Pressed " + lat + "Longitude" + lon);
+    };
+
+
+
+    function initMap() {
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                    var location=new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 15,
+                        center: location
+                    });
+
+                    var image = {
+                        url : "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                    }
+                    myMarker = new google.maps.Marker({
+                        position: location,
+                        map: map,
+                        draggable: true,
+                        icon : image
+                    });
+
+
+                    myMarker.addListener('click', function() {
+                        map.setZoom(8);
+                        map.setCenter(myMarker.getPosition());
+                    });
+                    google.maps.event.addDomListener(window, "resize", function() {
+                       var center = map.getCenter();
+                       google.maps.event.trigger(map, "resize");
+                       map.setCenter(center); 
+                    });
+
+                    $('#lat').val(position.coords.latitude);
+                    $('#long').val(position.coords.longitude);
+                    $('#startLat').val(position.coords.latitude);
+                    $('#startLong').val(position.coords.longitude);
+                     var session_id=$('#session_id').val();
+
+                    var latitude=position.coords.latitude
+                    var longitude=position.coords.longitude
+                    var rad = $('#radius').val();
+                    var jsonData = {
+                            'lat': latitude,
+                            'long': longitude,
+                            'radius': rad,
+                            'session_id':session_id
+                    };
+                     plotParking(jsonData);
+
+
+                    google.maps.event.addListener(myMarker, 'dragend', function(evt) {
+                        deleteMarkers();
+                        setMapOnAll(map);
+                        btnPress(evt.latLng.lat(), evt.latLng.lng());
+                        $('#lat').val(evt.latLng.lat());
+                        $('#long').val(evt.latLng.lng());
+                        $('#startLat').val(evt.latLng.lat());
+                        $('#startLong').val(evt.latLng.lng());
+                        var lat = evt.latLng.lat();
+                        var long = evt.latLng.lng();
+                        var radius = $('#radius').val();
+                        var session_id=$('#session_id').val();
+                        var jsonData = {
+                            'lat': lat,
+                            'long': long,
+                            'radius': radius,
+                            'session_id':session_id
+                        };
+
+                        plotParking(jsonData);
+                       
+                    });
+
+                    google.maps.event.addListener(myMarker, 'dragstart', function(evt) {});
+
+                    map.setCenter(myMarker.position);
+                    myMarker.setMap(map);
+
+
+                },
+                function() {
+                    handleLocationError(true, alert("Lafda hua"));
+                });
+
+        } else {
+            
+        }
+
+    }
+
+    function plotParking(jsonData)
+    {
+         $.ajax({
+                            type: "POST",
+                            url: "/find-park/",
+                            data: jsonData,
+                            dataType: 'json',
+                            "beforeSend": function(xhr, settings) {
+                                console.log("Before Send");
+                                $.ajaxSettings.beforeSend(xhr, settings);
+                            },
+                            success: function(result){
+                                spots = result.spots;
+                                console.log("Spots available");
+                                console.log(JSON.stringify(spots));
+                                for (var i = 0; i < spots.length; i++) {
+                                    
+                                    var res = spots[i];
+                                    //if(res.address!=""||res.address!=null)
+                                    {
+                                    //addAnotherMarker(res.lat , res.lon,res.address);
+                                    addAnotherMarker(res.lat , res.lon);
+                                    }
+                                }
+
+                            }
+                        });
+    }
+
+
+   /* function getAdd(location){
+        
+        var geocoder = new google.maps.Geocoder;
+         geocoder.geocode({'location':location},function(results,status,callback){
+            if (status === 'OK'){
+                if (results[1]){
+                    myAdd = results[1].formatted_address;
+                    
+                    console.log("My add inside "+myAdd);
+                    callback(myAdd);
+                }
+            }
+            return myAdd;
+        });
+        
+        console.log("My add variable is:-->"+myAdd);
+    } */
+
+    function addAnotherMarker(latitude,longitude) {
+       
+        console.log("Inside addAnotherMarker--->latitude-->"+latitude+"longitude--->"+longitude);
+    var location=new google.maps.LatLng(latitude,longitude);
+   // var geocoder = new google.maps.Geocoder;
+   /* var infowindow = new google.maps.InfoWindow({
+        content: ""
+    });
+    */
+            
+              var notMyMarker = new google.maps.Marker({
+                position: location,
+                        map: map,
+                        draggable: false
+              });
+              //infowindow.setContent(address);
+
+
+              notMyMarker.addListener('click', function() {
+                $('#endLat').val(latitude);
+                    $('#endLong').val(longitude);
+                    //Send session ID
+                calcRoute();
+              });
+
+              /*
+              notMyMarker.addListener('mouseover', function() {
+                infowindow.open(map, notMyMarker);
+              });
+              */
+
+              notMyMarker.addListener('mouseout', function() {
+             infowindow.close();
+             });
+
+            
+          markers.push(notMyMarker);
+        
+        
+        //console.log(notMyMarker.position.lat);
+        
+    }
+
+
+    function setMapOnAll(map) {
+     for (var i = 0; i < markers.length; i++) {
+         markers[i].setMap(map);
+     }
+    };
+
+    function deleteMarkers() {
+     setMapOnAll(null);
+     markers = [];
+    };
+</script>
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    }
+});
+</script>
+
+<script type="text/javascript" src='{% static "js/carsJS.js" %}'> </script>
+
+</html>
